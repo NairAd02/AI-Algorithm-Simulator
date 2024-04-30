@@ -1,0 +1,59 @@
+Me pudieras decir como pulir este código para que las flechas tomen una posición correcta (cómoda de ver) en dependencia de la positición de los vertices?. Actualmente funciona correctamente pero creo que se pueden dibujar mejor las flechas para que se adapten a las posiciones incluso interviniendo el factor distancia.
+Código:
+for (Vertex vertex : verticesGrafo) {
+			Elemento elementoInicial = (Elemento) vertex.getInfo();
+			for (Edge edge : vertex.getEdgeList()) {
+				Elemento elementoFinal = (Elemento) edge.getVertex().getInfo(); // se obtiene al elemento final
+				// Variables que representan las posiciones donde se van a trazar las rectas
+				int x1 = 0;
+				int y1 = 0;
+				int x2 = 0;
+				int y2 = 0;
+				// Se calculan las posiciones donde se van a trazar las rectas
+				// Condicionales referenciando siempre a la posicion del primer vertice con respecto al segundo
+				// Si el primer vertice esta más arriba y a la izq que el segundo vertice
+				if ((elementoInicial.getY() + elementoInicial.getLargo()) < elementoFinal.getY() && (elementoInicial.getX() + elementoInicial.getAncho()) < elementoFinal.getX())  {
+					// se calculan las posiciones del vertice inicial
+					x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho());
+					y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo() / 2);
+					// se calculan las posiciones del vertice final
+					x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho()/2);
+					y2 = (int) elementoFinal.getY();
+				}
+				else if ((elementoInicial.getY() + elementoInicial.getLargo()) < elementoFinal.getY() && elementoInicial.getX() > (elementoFinal.getX() + elementoFinal.getAncho())) { // si está más arriba y mas a la drch que el el vertice final
+					// se calculan las posiciones del vertice inicial
+					x1 = (int) elementoInicial.getX();
+					y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo() / 2);
+					x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho()/2);
+					y2 = (int) elementoFinal.getY();
+				}
+				else if ((elementoInicial.getY() + elementoInicial.getLargo()) < elementoFinal.getY()) { // si solamente está más arriba
+					x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho() / 2);
+					y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo());
+					x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho()/2);
+					y2 = (int) elementoFinal.getY();
+				}
+				else if (elementoInicial.getY() > (elementoFinal.getY() + elementoFinal.getLargo()) && (elementoInicial.getX() + elementoInicial.getAncho()) < elementoFinal.getX()) { // si está mas abajo y más a la izq que el vertice final
+					x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho() / 2);
+					y1 = (int) (elementoInicial.getY());
+					x2 = (int) (elementoFinal.getX());
+					y2 = (int) (elementoFinal.getY() + elementoFinal.getLargo() / 2);
+				}
+				else if (elementoInicial.getY() > (elementoFinal.getY() + elementoFinal.getLargo()) && elementoInicial.getX() > (elementoFinal.getX() + elementoFinal.getAncho())) { // si está más abajo y mas a la drch que el el vertice final			
+					x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho() / 2);
+					y1 = (int) (elementoInicial.getY());
+					x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho());
+					y2 = (int) (elementoFinal.getY() + elementoFinal.getLargo() / 2);
+				}
+				else if ((elementoInicial.getX() + elementoInicial.getAncho()) < elementoFinal.getX()) { // si está solamente más a la izq
+					// se calculan las posiciones del vertice inicial
+					x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho());
+					y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo() / 2);
+					// se calculan las posiciones del vertice final
+					x2 = (int) (elementoFinal.getX());
+					y2 = (int) (elementoFinal.getY() + elementoFinal.getLargo() / 2);
+				}
+				// Se dibuja la flecha
+				g2.drawLine(x1, y1, x2, y2);
+}
+}
