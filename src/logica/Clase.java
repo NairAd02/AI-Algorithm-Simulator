@@ -1,9 +1,16 @@
 package logica;
 
-import java.awt.Color;
+
+
+import java.io.Serializable;
+
 import utils.Colors;
 
-public class Clase {
+public class Clase implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String nombre;
 	private Color color; // atributo que representa el color de la clase
 

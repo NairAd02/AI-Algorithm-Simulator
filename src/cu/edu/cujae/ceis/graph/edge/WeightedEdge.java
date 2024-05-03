@@ -5,8 +5,12 @@ import cu.edu.cujae.ceis.graph.vertex.Vertex;
 /**
  *  <h1>Arista con peso</h1>
  */
-public class WeightedEdge extends Edge {
+public class WeightedEdge extends Edge implements Comparable<WeightedEdge> {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Objeto que representa el peso de la arista.
 	 */
@@ -32,6 +36,11 @@ public class WeightedEdge extends Edge {
 	public Object getWeight() {
 		return weight;
 	}
+	
+    @Override
+    public int compareTo(WeightedEdge otraArista) {
+        return Float.compare((float)this.weight, (float) otraArista.getWeight());
+    }
 
 	public void setWeight(Object weight) {
 		this.weight = weight;

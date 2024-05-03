@@ -1,7 +1,10 @@
 package utils;
 
-import java.awt.Color;
+
+
 import java.util.Random;
+
+import logica.Color;
 
 public class Colors {
 

@@ -2,17 +2,19 @@ package interfaz;
 
 import javax.swing.JFrame;
 
+
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import java.awt.Font;
-import java.awt.Graphics2D;
+
 
 import javax.swing.border.MatteBorder;
 
 import cu.edu.cujae.ceis.graph.interfaces.ILinkedWeightedEdgeDirectedGraph;
+import cu.edu.cujae.ceis.graph.vertex.Vertex;
 import logica.Controlador;
+import logica.Grafo;
 import utils.ManejoDirectorios;
 import utils.ManejoImagen;
 import utils.Par;
@@ -24,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.awt.GridLayout;
 import javax.swing.BoxLayout;
 import javax.swing.SwingConstants;
@@ -44,18 +47,30 @@ public class FramePrincipal extends JFrame {
 	private JPanel contentPane;
 	private static FramePrincipal framePrincipal;
 	private boolean isInserctionVertex, isInserctionEdge, isDeleteVertex, isDeleteArista;
-	private String nombreCiudad;
-	private JLabel lblAddEdge;
+	private String nombreCiudad; // atributo que representa el nombre de la ciudad seleccionado
+	private String clase; // atributo que representa el nombre de la clase seleccionado 
 	private JLabel lblAddVertex;
 	private GraphPanel lienzo;
 	private JPanel panelLateral;
 	private JPanel panelOpcionesLateral;
 	private JLabel lblRelleno;
 	private JLabel lblEliminarVertice;
-	private JLabel lblEliminarArista;
 	private JPanel panelSuperior;
 	private JPanel panelMenuSuperior;
 	private JLabel lblSalir;
+	private JMenuBar menuBarOpciones;
+	private JMenu mnOpciones;
+	private JMenuItem mntmVerLeyenda;
+	private JMenuItem mntmNewMenuItem_5;
+	private JPanel panelCentral;
+	private JMenuItem mntmGuardarGrafo;
+	private JMenuItem mntmNuevoGrafo;
+	private JMenuItem mntmCargarGrafo;
+	private JMenuItem mntmImportarImagen;
+	private Vertex vertexSeleccionado; // representa el vértice seleccionado
+	private JMenuItem mntmClasificadosCsv;
+	private JMenuItem mntmNewMenuItem_1;
+
 
 
 
@@ -66,13 +81,25 @@ public class FramePrincipal extends JFrame {
 	}
 
 
-	public String getnombreCiudad() {
+
+
+	public String getNombreCiudad() {
 		return nombreCiudad;
 	}
 
-	public void setnombreCiudad(String nombreGrafo) {
+	public void setNombreCiudad(String nombreGrafo) {
 		this.nombreCiudad = nombreGrafo;
 	}
+
+	public String getClase() {
+		return clase;
+	}
+
+
+	public void setClase(String clase) {
+		this.clase = clase;
+	}
+
 
 	public boolean isInserctionVertex() {
 		return isInserctionVertex;
@@ -91,6 +118,16 @@ public class FramePrincipal extends JFrame {
 		this.isInserctionEdge = isInserctionEdge;
 	}
 
+
+
+	public Vertex getVertexSeleccionado() {
+		return vertexSeleccionado;
+	}
+
+
+	public void setVertexSeleccionado(Vertex vertexSeleccionado) {
+		this.vertexSeleccionado = vertexSeleccionado;
+	}
 
 
 	public boolean isDeleteVertex() {
@@ -113,6 +150,9 @@ public class FramePrincipal extends JFrame {
 		setUndecorated(true);
 		setResizable(false);
 		this.nombreCiudad = "";
+		this.clase = "";
+
+
 		// se marcan dan valores iniciales a los boolean
 		this.isInserctionVertex = false;
 		this.isInserctionEdge = false;
@@ -123,12 +163,12 @@ public class FramePrincipal extends JFrame {
 		setBounds(100, 100, 450, 597);
 		contentPane = new JPanel();
 		contentPane.setBorder(new MatteBorder(4, 4, 4, 4, (Color) new Color(0, 0, 0)));
-		this.lienzo = new GraphPanel();
+
 
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
 
-		JPanel panelCentral = new JPanel();
+		panelCentral = new JPanel();
 		contentPane.add(panelCentral, BorderLayout.CENTER);
 		panelCentral.setLayout(new BorderLayout(0, 0));
 
@@ -152,24 +192,28 @@ public class FramePrincipal extends JFrame {
 		lblAddVertex.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
-				FrameAddVertice frameAddVertice = new FrameAddVertice();
-				frameAddVertice.setVisible(true);
-				setEnabled(false); // se inhabilita del frame principal
-				// se inhabilitan las demas opciones
-				isDeleteArista = false;
-				isDeleteVertex = false;
-				isInserctionEdge = false;
-				// se reincia además del valor de los par de vertices como parte de la cancelación de insercción de arista
-				Par.vertexInicial = null;
-				Par.vertexFinal = null;
+				if (lblAddVertex.isEnabled()) { // si el boton se encuentra habilitado
+					FrameAddVertice frameAddVertice = new FrameAddVertice();
+					frameAddVertice.setVisible(true);
+					setEnabled(false); // se inhabilita del frame principal
+					// se inhabilitan las demas opciones
+					isDeleteArista = false;
+					isDeleteVertex = false;
+					isInserctionEdge = false;
+					// se reincia además del valor de los par de vertices como parte de la cancelación de insercción de arista
+					Par.vertexInicial = null;
+					Par.vertexFinal = null;
+				}
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				lblAddVertex.setBackground(SystemColor.activeCaptionBorder);
+				if (lblAddVertex.isEnabled())
+					lblAddVertex.setBackground(SystemColor.activeCaptionBorder);
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				lblAddVertex.setBackground(new Color(35, 47, 59));
+				if (lblAddVertex.isEnabled())
+					lblAddVertex.setBackground(new Color(35, 47, 59));
 			}
 		});
 		panelOpcionesLateral.setLayout(null);
@@ -178,79 +222,44 @@ public class FramePrincipal extends JFrame {
 		lblAddVertex.setFont(new Font("Dialog", Font.PLAIN, 21));
 		panelOpcionesLateral.add(lblAddVertex);
 
-		lblAddEdge = new JLabel("Insertar Arista");
-		lblAddEdge.setOpaque(true);
-		lblAddEdge.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		lblAddEdge.setForeground(SystemColor.textHighlightText);
-		lblAddEdge.setHorizontalAlignment(SwingConstants.CENTER);
-		lblAddEdge.setBounds(10, 196, 177, 32);
-		lblAddEdge.setBackground(new Color(35, 47, 59));
-		lblAddEdge.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (Controlador.getInstancie().cantVertices() > 1) { // si la cantdad de vertices es mayor que 1
-					// se muestra el frame advertencia para informar al usuario de lo que debe de hacer
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Seleccione dos vertices para trazar la arista");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame
-					isInserctionEdge = true; // se habilita la logica de inserccion de aristas
-					// se inhabilitan las demás opciones
-					isDeleteArista = false;
-					isInserctionVertex = false;
-					isDeleteVertex = false;
-				}
-				else {
-					// se muestra el frame advertencia para advertir del error
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Al menos deben de existir dos vertices para poder trazar aristas");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame
-				}
-
-			}
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				lblAddEdge.setBackground(SystemColor.activeCaptionBorder);
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-				lblAddEdge.setBackground(new Color(35, 47, 59));
-			}
-		});
-		lblAddEdge.setFont(new Font("Dialog", Font.PLAIN, 21));
-		lblAddEdge.setBorder(new MatteBorder(2, 2, 2, 2, (Color) SystemColor.textHighlightText));
-		panelOpcionesLateral.add(lblAddEdge);
-
 		lblEliminarVertice = new JLabel("Eliminar Vertice");
 		lblEliminarVertice.setOpaque(true);
 		lblEliminarVertice.setBackground(new Color(35, 47, 59));
 		lblEliminarVertice.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				lblEliminarVertice.setBackground(SystemColor.activeCaptionBorder);
+				if (lblEliminarVertice.isEnabled())
+					lblEliminarVertice.setBackground(SystemColor.activeCaptionBorder);
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				lblEliminarVertice.setBackground(new Color(35, 47, 59));
+				if (lblEliminarVertice.isEnabled())
+					lblEliminarVertice.setBackground(new Color(35, 47, 59));
 			}
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (Controlador.getInstancie().cantVertices() != 0) { // se existe al menos un vertice
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Seleccione el vertice que desea eliminar");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame principal
-					isDeleteVertex = true; // se habilita la eliminación de un vértice
-					// se inhabilitan las demás opciones
-					isDeleteArista = false;
-					isInserctionVertex = false;
-					isInserctionEdge = false;
-					// se reincia además del valor de los par de vertices como parte de la cancelación de insercción de arista
-					Par.vertexInicial = null;
-					Par.vertexFinal = null;
-				}
-				else {
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Debe de existir al menos un vertice para poder realizar una eliminacion");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame principal
+				if (lblEliminarVertice.isEnabled()) { // si el boton se encuentra habilitado
+					if (Controlador.getInstancie().getGrafo().cantVertices() != 0) { // se existe al menos un vertice
+						FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Seleccione el vertice que desea eliminar");
+						frameAdvertencia.setVisible(true);
+						setEnabled(false); // se inhabilita el frame principal
+						isDeleteVertex = true; // se habilita la eliminación de un vértice
+						// se inhabilitan las demás opciones
+						isDeleteArista = false;
+						isInserctionVertex = false;
+						// ademas se libera la memoria posiblemente ocupada de las variables que intervienen en la insercción del vértice
+						nombreCiudad = "";
+						clase = "";
+						isInserctionEdge = false;
+						// se reincia además del valor de los par de vertices como parte de la cancelación de insercción de arista
+						Par.vertexInicial = null;
+						Par.vertexFinal = null;
+					}
+					else {
+						FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Debe de existir al menos un vertice para poder realizar una eliminacion");
+						frameAdvertencia.setVisible(true);
+						setEnabled(false); // se inhabilita el frame principal
+					}
 				}
 			}
 		});
@@ -262,55 +271,13 @@ public class FramePrincipal extends JFrame {
 		lblEliminarVertice.setBounds(10, 120, 177, 32);
 		panelOpcionesLateral.add(lblEliminarVertice);
 
-		lblEliminarArista = new JLabel("Eliminar Arista");
-		lblEliminarArista.setOpaque(true);
-		lblEliminarArista.setBackground(new Color(35, 47, 59));
-		lblEliminarArista.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				lblEliminarArista.setBackground(SystemColor.activeCaptionBorder);
-			}
-			@Override
-			public void mouseExited(MouseEvent e) {
-				lblEliminarArista.setBackground(new Color(35, 47, 59));
-			}
-			@Override
-			public void mousePressed(MouseEvent e) {
-				if (Controlador.getInstancie().cantAristas() != 0) { // si existe al menos una arista
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Seleccione la arista que desea eliminar");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame principal
-					isDeleteArista = true; // se habilita la eliminacion de arista
-					// se inhabilitan las demás opciones
-					isInserctionEdge = false;
-					// se reincia además del valor de los par de vertices como parte de la cancelación de insercción de arista
-					Par.vertexInicial = null;
-					Par.vertexFinal = null;
-					isInserctionVertex = false;
-					isDeleteVertex = false;
-				}
-				else {
-					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Debe de haber al menos una arista para realizar una eliminacion");
-					frameAdvertencia.setVisible(true);
-					setEnabled(false); // se inhabilita el frame principal
-				}
-			}
-		});
-		lblEliminarArista.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		lblEliminarArista.setForeground(SystemColor.textHighlightText);
-		lblEliminarArista.setHorizontalAlignment(SwingConstants.CENTER);
-		lblEliminarArista.setFont(new Font("Dialog", Font.PLAIN, 21));
-		lblEliminarArista.setBorder(new MatteBorder(2, 2, 2, 2, (Color) SystemColor.textHighlightText));
-		lblEliminarArista.setBounds(10, 272, 177, 32);
-		panelOpcionesLateral.add(lblEliminarArista);
-
 		lblRelleno = new JLabel();
 		lblRelleno.setHorizontalAlignment(SwingConstants.LEFT);
 		lblRelleno.setIcon(new ImageIcon(FramePrincipal.class.getResource("/img/logo2.jpg")));
 		lblRelleno.setBackground(SystemColor.info);
 		panelLateral.add(lblRelleno, BorderLayout.NORTH);
 
-		panelCentral.add(lienzo, BorderLayout.CENTER);
+
 
 		panelSuperior = new JPanel();
 		panelSuperior.setBorder(new MatteBorder(0, 0, 3, 0, (Color) new Color(0, 0, 0)));
@@ -343,19 +310,23 @@ public class FramePrincipal extends JFrame {
 		mnNewMenu.setBackground(new Color(35, 47, 59));
 		mnNewMenu.setOpaque(true);
 		mnNewMenu.setHorizontalAlignment(SwingConstants.CENTER);
-		mnNewMenu.setIcon(new ImageIcon(FramePrincipal.class.getResource("/img/Home Page.png")));
+		mnNewMenu.setIcon(new ImageIcon(FramePrincipal.class.getResource("/img/Home.png")));
 		mnNewMenu.setFont(new Font("Dialog", Font.PLAIN, 24));
 		menuBar.add(mnNewMenu);
 
-		JMenuItem mntmNewMenuItem = new JMenuItem("Nuevo Grafo");
-		mntmNewMenuItem.addActionListener(new ActionListener() {
+		mntmNuevoGrafo = new JMenuItem("Nuevo Grafo");
+		mntmNuevoGrafo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				// Se abre el frame para crear un nuevo grafo
+				FrameCrearGrafo frameCrearGrafo = new FrameCrearGrafo();
+				frameCrearGrafo.setVisible(true);
+				setEnabled(false); // se inhabilita el frame principal
 			}
 		});
-		mnNewMenu.add(mntmNewMenuItem);
+		mnNewMenu.add(mntmNuevoGrafo);
 
-		JMenuItem mntmNewMenuItem_2 = new JMenuItem("Guardar Grafo");
-		mntmNewMenuItem_2.addActionListener(new ActionListener() {
+		mntmGuardarGrafo = new JMenuItem("Guardar Grafo");
+		mntmGuardarGrafo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Se crea un sistema de exploracion
 
@@ -365,7 +336,8 @@ public class FramePrincipal extends JFrame {
 					File selectedFile = fileChooser.getSelectedFile(); // se obtiene el archivo selecionado
 					// se guarda el grafo en memoria externa
 					try {
-						ManejoDirectorios.guardarArchivo(Controlador.getInstancie().getGrafoKNN(), selectedFile.getAbsolutePath());
+						ManejoDirectorios.guardarArchivo(Controlador.getInstancie().getGrafo(), selectedFile.getAbsolutePath());
+						FramePrincipal.lanzarNotificacion("Se ha guardado con exito el grafo");
 					} catch (FileNotFoundException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -376,10 +348,10 @@ public class FramePrincipal extends JFrame {
 				}
 			}
 		});
-		mnNewMenu.add(mntmNewMenuItem_2);
+		mnNewMenu.add(mntmGuardarGrafo);
 
-		JMenuItem mntmNewMenuItem_1 = new JMenuItem("Cargar Grafo");
-		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+		mntmCargarGrafo = new JMenuItem("Cargar Grafo");
+		mntmCargarGrafo.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser fileChooser = new JFileChooser();
 				int returnValue = fileChooser.showOpenDialog(null);
@@ -387,8 +359,10 @@ public class FramePrincipal extends JFrame {
 					File selectedFile = fileChooser.getSelectedFile(); // se obtiene el archivo selecionado
 					// Se carga el grafo de memoria externa
 					try {
-						Controlador.getInstancie().setGrafoKNN((ILinkedWeightedEdgeDirectedGraph)ManejoDirectorios.recuperarArchivo(selectedFile.getAbsolutePath()));
-						actualizarLienzo(); // se actualiza el lienzo para mostrar la información del grafo cargado
+						Controlador.getInstancie().setGrafo((Grafo) ManejoDirectorios.recuperarArchivo(selectedFile.getAbsolutePath()));
+						actualizarEstadoBotones(); // se actualiza el estado de los botones
+						actualizarLienzo(); //se actualiza la información del lienzo para mostrar el diagrama cargado
+						FramePrincipal.lanzarNotificacion("Se ha cargado el grafo seleccionado correctamente");
 					} catch (FileNotFoundException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -402,10 +376,10 @@ public class FramePrincipal extends JFrame {
 				}
 			}
 		});
-		mnNewMenu.add(mntmNewMenuItem_1);
+		mnNewMenu.add(mntmCargarGrafo);
 
-		JMenuItem mntmNewMenuItem_3 = new JMenuItem("Importar PNG");
-		mntmNewMenuItem_3.addActionListener(new ActionListener() {
+		mntmImportarImagen = new JMenuItem("Importar PNG");
+		mntmImportarImagen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// Se crea un sistema de exploracion
 
@@ -414,7 +388,7 @@ public class FramePrincipal extends JFrame {
 				if (returnValue == JFileChooser.APPROVE_OPTION) {// si se seleccion� un archivo
 					File selectedFile = fileChooser.getSelectedFile();
 					ManejoImagen.generarImagen(lienzo, selectedFile.getAbsolutePath());
-
+					FramePrincipal.lanzarNotificacion("La imagen del grafo ha sido correctamente generada");
 				}
 				/*
 				FrameProyectosAbrir frameProyectosAbrir = new FrameProyectosAbrir(Principal.this);
@@ -423,7 +397,103 @@ public class FramePrincipal extends JFrame {
 			}
 		});
 
-		mnNewMenu.add(mntmNewMenuItem_3);
+		mnNewMenu.add(mntmImportarImagen);
+
+		menuBarOpciones = new JMenuBar();
+		panelMenuSuperior.add(menuBarOpciones);
+
+		mnOpciones = new JMenu("Opciones");
+		mnOpciones.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				if (mnOpciones.isEnabled()) // se está habilitado el botón
+					mnOpciones.setBackground(SystemColor.activeCaptionBorder);
+
+			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+				if (mnOpciones.isEnabled()) // se está habilitado el botón
+					mnOpciones.setBackground(new Color(35, 47, 59));
+			}
+		});
+		mnOpciones.setIcon(new ImageIcon(FramePrincipal.class.getResource("/img/question1.png")));
+		mnOpciones.setOpaque(true);
+		mnOpciones.setHorizontalAlignment(SwingConstants.CENTER);
+		mnOpciones.setForeground(SystemColor.textHighlightText);
+		mnOpciones.setFont(new Font("Dialog", Font.PLAIN, 24));
+		mnOpciones.setBorder(new MatteBorder(2, 2, 2, 2, (Color) SystemColor.textHighlightText));
+		mnOpciones.setBackground(new Color(35, 47, 59));
+		menuBarOpciones.add(mnOpciones);
+
+		mntmVerLeyenda = new JMenuItem("Ver Leyenda");
+		mntmVerLeyenda.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				FrameLeyenda frameLeyenda = new FrameLeyenda();
+				frameLeyenda.setVisible(true);
+				setEnabled(false); // se inhabilita el frame actual
+			}
+		});
+		mnOpciones.add(mntmVerLeyenda);
+
+		mntmNewMenuItem_5 = new JMenuItem("Ver Matriz de Distancias");
+		mntmNewMenuItem_5.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				FrameMatrizDistancias frameMatrizDistancias = new FrameMatrizDistancias();
+				frameMatrizDistancias.setVisible(true);
+				setEnabled(false); // se inhabilita el frame principal
+			}
+		});
+		mnOpciones.add(mntmNewMenuItem_5);
+
+		mntmClasificadosCsv = new JMenuItem("Cargar Clasificados.csv");
+		mntmClasificadosCsv.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// se cargan y se añaden al grafo los datos clasificados
+				try {
+					Controlador.getInstancie().getGrafo().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos clasificados.csv"));
+					actualizarLienzo(); // se actualiza la información del lienzo
+					FramePrincipal.lanzarNotificacion("Los datos clasificados del fichero han sido cargados con exito");
+				} catch (Exception e1) {
+					
+					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Ya los datos de este fichero ya fueron cargados");
+					frameAdvertencia.setVisible(true);
+					setEnabled(false); // se inhabilita el frame actual
+				}
+			}
+		});
+		mnOpciones.add(mntmClasificadosCsv);
+
+		JMenuItem mntmNewMenuItem = new JMenuItem("Cargar No Clasificados.csv");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// se cargan y se añaden al grafo los datos no clasificados
+				try {
+					Controlador.getInstancie().getGrafo().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos no clasificados.csv"));
+					actualizarLienzo(); // se actualiza la información del lienzo
+					FramePrincipal.lanzarNotificacion("Los datos no clasificados del fichero han sido cargados con exito");
+				} catch (Exception e1) {
+
+					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Ya los datos de este fichero ya fueron cargados");
+					frameAdvertencia.setVisible(true);
+					setEnabled(false); // se inhabilita el frame actual
+				}
+			}
+		});
+		mnOpciones.add(mntmNewMenuItem);
+
+		mntmNewMenuItem_1 = new JMenuItem("Exportar Matriz de Distancia");
+		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Controlador.getInstancie().getGrafo().crearFicheroMatrizDistancias(); // se crea en memoria externa un fichero con la info de la matriz de distancias del grafo
+					FramePrincipal.lanzarNotificacion("La actual Matriz de Distancias del Grafo ha sido exportada correctamente");
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+		});
+		mnOpciones.add(mntmNewMenuItem_1);
 
 		lblSalir = new JLabel("X ");
 		lblSalir.setHorizontalAlignment(SwingConstants.CENTER);
@@ -448,7 +518,32 @@ public class FramePrincipal extends JFrame {
 			}
 		});
 		panelSuperior.add(lblSalir, BorderLayout.EAST);
+		this.actualizarEstadoBotones(); // se actualiza el estado de los botones
+		// se prepara un lienzo para pintar la información del grafo
+		this.lienzo = new GraphPanel();
+		panelCentral.add(lienzo, BorderLayout.CENTER); // se añade el lienzo 
 		lienzo.repintarse(); // se repinta el lienzo
+
+
+
+	}
+
+	public void actualizarEstadoBotones () {
+		if (Controlador.getInstancie().getGrafo() == null) { // si no ha sido cargado ningún grafo
+			this.lblAddVertex.setEnabled(false);
+			this.lblEliminarVertice.setEnabled(false);
+			this.mnOpciones.setEnabled(false);
+			this.mntmGuardarGrafo.setEnabled(false);
+			this.mntmImportarImagen.setEnabled(false);
+		}
+		else {
+			// se habilitan los botones para la manipulación de los datos del grafo
+			this.lblAddVertex.setEnabled(true);
+			this.lblEliminarVertice.setEnabled(true);
+			this.mnOpciones.setEnabled(true);
+			this.mntmGuardarGrafo.setEnabled(true);
+			this.mntmImportarImagen.setEnabled(true);
+		}
 	}
 
 	public static FramePrincipal getInstancie () {
@@ -459,6 +554,9 @@ public class FramePrincipal extends JFrame {
 	}
 
 
+	public void actualizarColoresPanelesLienzo () {
+		this.lienzo.actualizarColoresPaneles();
+	}
 
 	public void actualizarAristasLienzo () {
 		this.lienzo.repintarse();
