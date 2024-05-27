@@ -30,17 +30,21 @@ public class VertexPanel extends JPanel {
 	private Vertex vertex;
 	private int mouseX, mouseY;
 	private JLabel lblInfoElemento;
+	private boolean dragging;
 
 
 	/**
 	 * Create the panel.
 	 */
 	public VertexPanel(Vertex v) {
+		this.dragging = false;
 		setBorder(new MatteBorder(3, 3, 3, 3, (Color) new Color(0, 0, 0)));
 
 		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
+				
+				dragging = true;
 				int x = e.getXOnScreen()- FramePrincipal.getInstancie().getLienzo().getLocationOnScreen().x;
 				int y = e.getYOnScreen()- FramePrincipal.getInstancie().getLienzo().getLocationOnScreen().y;
 				Controlador.getInstancie().getAlgoritmoK().actualizarPosicionesVertice(vertex, x - mouseX, y - mouseY); // se actualizan las posiciones del vértice
@@ -52,6 +56,7 @@ public class VertexPanel extends JPanel {
 				}
 
 			}
+
 		});
 		addMouseListener(new MouseAdapter() {
 			@Override
@@ -95,14 +100,24 @@ public class VertexPanel extends JPanel {
 			}
 
 			@Override
-			public void mouseEntered(MouseEvent e) {
-				FramePrincipal.getInstancie().setVertexSeleccionado(vertex); // se marca como vértice seleccionado
-				FramePrincipal.getInstancie().actualizarAristasLienzo(); // se actualiza las aristas del lienzo
+			public void mouseEntered(MouseEvent e) { 
+				if (!dragging) { // si no se está moviendo el cursor
+					FramePrincipal.getInstancie().setVertexSeleccionado(vertex); // se marca como vértice seleccionado
+					FramePrincipal.getInstancie().actualizarAristasLienzo(); // se actualiza las aristas del lienzo
+					
+
+				}
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				FramePrincipal.getInstancie().setVertexSeleccionado(null); // se indica que ya no está seleccionado el vértice
-				FramePrincipal.getInstancie().actualizarAristasLienzo(); // se actualiza las aristas del lienzo
+				if (!dragging) { // si no se está moviendo el cursor
+					FramePrincipal.getInstancie().setVertexSeleccionado(null); // se indica que ya no está seleccionado el vértice
+					FramePrincipal.getInstancie().actualizarAristasLienzo(); // se actualiza las aristas del lienzo
+				}
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				dragging = false; // Se ha soltado el ratón
 			}
 
 		});
@@ -115,6 +130,7 @@ public class VertexPanel extends JPanel {
 		setLayout(new BorderLayout(0, 0));
 		this.actualizarColorPanel(); // se actualiza el color del panel
 		lblInfoElemento = new JLabel(((Elemento) this.vertex.getInfo()).getId());
+	
 
 		lblInfoElemento.setForeground(SystemColor.textHighlightText);
 		lblInfoElemento.setHorizontalAlignment(SwingConstants.CENTER);

@@ -5,6 +5,7 @@ import java.awt.Color;
 
 
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -154,75 +155,77 @@ public class GraphPanel extends JPanel {
 	private void actualizarAristasLienzo(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // Para suavizar los bordes
-
+		g2.setColor(SystemColor.activeCaptionText);			
 		// Define el grosor de la línea
 		float grosor = 3.0f; // Puedes cambiar este valor para ajustar el grosor
 		g2.setStroke(new BasicStroke(grosor));
+		Vertex vertexSeleccionado = FramePrincipal.getInstancie().getVertexSeleccionado(); // se obtiene al vértice seleccionado
+		if (vertexSeleccionado != null) { // si fue seleccionado un vértice
+			Elemento elementoInicial = (Elemento) vertexSeleccionado.getInfo(); // se obtiene al elemento inicial desde donde van a partir las aristas
+          // se pintan las aristas adyacentes del vértice seleccionado
+		for (Edge edge : vertexSeleccionado.getEdgeList()) { // se iteran las aristas adyacentes del vértice
+			Elemento elementoFinal = (Elemento) edge.getVertex().getInfo(); // se obtiene al elemento final
+			// Variables que representan las posiciones donde se van a trazar las rectas
+			int x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho() / 2);
+			int y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo() / 2);
+			int x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho() / 2);
+			int y2 = (int) (elementoFinal.getY() + elementoFinal.getLargo() / 2);
 
-		LinkedList<Vertex> verticesGrafo = Controlador.getInstancie().getAlgoritmoK().getVerticesList(); // se obtiene la lista de vertices del grafo
+			// Calcula el ángulo de la línea entre los centros
+			double angulo = Math.atan2(y2 - y1, x2 - x1);
 
-		for (Vertex vertex : verticesGrafo) {
-			Elemento elementoInicial = (Elemento) vertex.getInfo(); // se obtiene al elemento inicial
-			for (Edge edge : vertex.getEdgeList()) {
-				Elemento elementoFinal = (Elemento) edge.getVertex().getInfo(); // se obtiene al elemento final
-				// Variables que representan las posiciones donde se van a trazar las rectas
-				int x1 = (int) (elementoInicial.getX() + elementoInicial.getAncho() / 2);
-				int y1 = (int) (elementoInicial.getY() + elementoInicial.getLargo() / 2);
-				int x2 = (int) (elementoFinal.getX() + elementoFinal.getAncho() / 2);
-				int y2 = (int) (elementoFinal.getY() + elementoFinal.getLargo() / 2);
+			// Calcula las nuevas coordenadas de inicio y fin de la línea, teniendo en cuenta el tamaño de los elementos
+			int nuevoX1 = (int) (x1 + (elementoInicial.getAncho() / 2) * Math.cos(angulo));
+			int nuevoY1 = (int) (y1 + (elementoInicial.getLargo() / 2) * Math.sin(angulo));
+			int nuevoX2 = (int) (x2 - (elementoFinal.getAncho() / 2) * Math.cos(angulo));
+			int nuevoY2 = (int) (y2 - (elementoFinal.getLargo() / 2) * Math.sin(angulo));
 
-				// Calcula el ángulo de la línea entre los centros
-				double angulo = Math.atan2(y2 - y1, x2 - x1);
+		
 
-				// Calcula las nuevas coordenadas de inicio y fin de la línea, teniendo en cuenta el tamaño de los elementos
-				int nuevoX1 = (int) (x1 + (elementoInicial.getAncho() / 2) * Math.cos(angulo));
-				int nuevoY1 = (int) (y1 + (elementoInicial.getLargo() / 2) * Math.sin(angulo));
-				int nuevoX2 = (int) (x2 - (elementoFinal.getAncho() / 2) * Math.cos(angulo));
-				int nuevoY2 = (int) (y2 - (elementoFinal.getLargo() / 2) * Math.sin(angulo));
+			// Dibuja la línea
+			g2.drawLine(nuevoX1, nuevoY1, nuevoX2, nuevoY2);
 
-				// Definir el color
-				// Si ha sido seleccionado un vértice en la interfaz y ese vértice es al que se le van a pintar las aristas
-				if (FramePrincipal.getInstancie().getVertexSeleccionado() !=  null && 
-						vertex.equals(FramePrincipal.getInstancie().getVertexSeleccionado())) {
-					g2.setColor(SystemColor.RED);							
-				}
-				else {
-					g2.setColor(SystemColor.inactiveCaptionBorder);
-				}
+			// Dibuja la flecha al final de la línea
+			int size = 10; // Tamaño de la flecha
+			int dx = nuevoX2 - nuevoX1, dy = nuevoY2 - nuevoY1;
+			double D = Math.sqrt(dx*dx + dy*dy);
+			double xm = D - size, xn = xm, ym = size, yn = -size, x;
+			double sin = dy / D, cos = dx / D;
 
-				// Dibuja la línea
-				g2.drawLine(nuevoX1, nuevoY1, nuevoX2, nuevoY2);
+			x = xm*cos - ym*sin + nuevoX1;
+			ym = xm*sin + ym*cos + nuevoY1;
+			xm = x;
 
-				// Dibuja la flecha al final de la línea
-				int size = 10; // Tamaño de la flecha
-				int dx = nuevoX2 - nuevoX1, dy = nuevoY2 - nuevoY1;
-				double D = Math.sqrt(dx*dx + dy*dy);
-				double xm = D - size, xn = xm, ym = size, yn = -size, x;
-				double sin = dy / D, cos = dx / D;
+			x = xn*cos - yn*sin + nuevoX1;
+			yn = xn*sin + yn*cos + nuevoY1;
+			xn = x;
 
-				x = xm*cos - ym*sin + nuevoX1;
-				ym = xm*sin + ym*cos + nuevoY1;
-				xm = x;
-
-				x = xn*cos - yn*sin + nuevoX1;
-				yn = xn*sin + yn*cos + nuevoY1;
-				xn = x;
-
-				int[] xpoints = {nuevoX2, (int) xm, (int) xn};
-				int[] ypoints = {nuevoY2, (int) ym, (int) yn};
+			int[] xpoints = {nuevoX2, (int) xm, (int) xn};
+			int[] ypoints = {nuevoY2, (int) ym, (int) yn};
 
 
-				g2.fillPolygon(xpoints, ypoints, 3);
+			g2.fillPolygon(xpoints, ypoints, 3);
 
-				// Dibujar la ponderación de la arista
-				int xCenter = (x1 + x2) / 2;
-				int yCenter = (y1 + y2) / 2;
-				// se actualiza la ponderacion de la arista
-				Controlador.getInstancie().getAlgoritmoK().actualizarPonderacionArista((WeightedEdge) edge, vertex, edge.getVertex());
-				String weight = String.format("%.2f", ((WeightedEdge)edge).getWeight());
-				g2.drawString(weight, xCenter, yCenter);
-			}
+			// Dibujar la ponderación de la arista
+			int xCenter = (x1 + x2) / 2;
+			int yCenter = (y1 + y2) / 2;
+			// se actualiza la ponderacion de la arista
+			//Controlador.getInstancie().getAlgoritmoK().actualizarPonderacionArista((WeightedEdge) edge, vertexSeleccionado, edge.getVertex());
+			String weight = String.format("%.2f", ((WeightedEdge)edge).getWeight());
+			// Se Define la fuente y el tamaño
+			Font fuente = new Font("Dialog", Font.BOLD, 20); 
+			g2.setFont(fuente);
+			// Se Define el desplazamiento
+			int desplazamientoX = 20; 
+			int desplazamientoY = 20; 
+
+			// Dibuja el texto
+			g2.drawString(weight, xCenter + desplazamientoX, yCenter + desplazamientoY);
+			
 		}
+
+		}
+	
 	}
 
 

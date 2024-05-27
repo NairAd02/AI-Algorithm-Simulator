@@ -23,11 +23,13 @@ public class Dbscan extends AlgoritmoK {
 
 	private float radio;
 	private int numeroMinPuntos;
+	private Set<Vertex> allVisitados; // representan todos los vértices visitados en la ejecución del algoritmo
 
 	public Dbscan(float radio, int numeroMinPuntos) {
 		super();
 		this.radio = radio;
 		this.numeroMinPuntos = numeroMinPuntos;
+		this.allVisitados = new HashSet<Vertex>();
 	}
 
 
@@ -61,15 +63,17 @@ public class Dbscan extends AlgoritmoK {
 
 	public void ejecutarAlgoritmo() {
 		// Lo primero se desclasificar a todos los vértices en caso de que ya se haya ejecutado al menos una vez el algoritmo
-
+		System.out.println("Hola algoritmo");
 		// se desclasifican los elementos que ya hayan sido clasificados
 		this.desclasificarElementos();
+		// se limpia de la lista de todos los visitados
+		this.allVisitados.clear();
 		Iterator<Vertex> iterVertices = this.grafo.getVerticesList().iterator();
 
 		while (iterVertices.hasNext()) {
 			Vertex aux = iterVertices.next(); // se obtiene al siguiente vertice
-			if (!((Elemento) aux.getInfo()).isClasificado()) // si el vertice es no clasificado
-				this.ejecutarDensidadAlacanzable(aux); // se clasifica el vertice no clasificado de acuerdo al algoritmo KNN
+			if (!((Elemento) aux.getInfo()).isClasificado() && !this.allVisitados.contains(aux)) // si el vertice es no clasificado y si no ha pasado por el contexto de la densidad alcanzable
+				this.ejecutarDensidadAlacanzable(aux); // se clasifica el vertice no clasificado de acuerdo al algoritmo DBSCAN
 		}
 		// se actualizan las clasificaciones por si un clúster desapareció
 		this.actualizarClusters();
@@ -108,6 +112,7 @@ public class Dbscan extends AlgoritmoK {
 
 		// si la cantidad de vértices del posible clúster es mayor o igual al número mínimo de puntos
 
+		System.out.println("Cantidad un Cluser " + visitados.size());
 		if (visitados.size() >= this.numeroMinPuntos) {
 			this.clasificarVertices(visitados); // se clasifican los vértices visitados en el recorrido de determinación del clúster
 		}
@@ -165,8 +170,11 @@ public class Dbscan extends AlgoritmoK {
 	}
 	// El tipo de retorno de la función es para indicar a la pila de llamadas recursivas sobre la formación de un cluster
 	private void ejecutarDensidadAlacanzableRecurs (Vertex vertex, Set<Vertex> visitados /* parámetro para evitar lazos infinitos */) {
-		// Se marca el vértice como visitado
+		// Se marca el vértice como visitado en el contexto de ejecución de una bifuración de densidad alcanzable
 		visitados.add(vertex);
+		/* se marca el vértice en el contexto global de ejecución del algoritmo para saber en un futuro si un vértice en 
+		 * específico pasó por el contexto de la densidad alcanzable*/
+		this.allVisitados.add(vertex);
 		Iterator<Edge> iterAristasAdyacentes = vertex.getEdgeList().iterator();
 
 
@@ -174,7 +182,8 @@ public class Dbscan extends AlgoritmoK {
 		while (iterAristasAdyacentes.hasNext()) {
 			WeightedEdge aristaAux = (WeightedEdge) iterAristasAdyacentes.next();
 			Vertex vertexAux = aristaAux.getVertex(); // se obtiene el vértice al cual apunta la arista
-			if (!visitados.contains(vertexAux)  && (float) aristaAux.getWeight() <= this.radio) { // si el vértice no ha sido visitado la distancia hacia el punto vecino es menor que el radio			
+			if (!visitados.contains(vertexAux)  && (float) aristaAux.getWeight() <= this.radio) { /* si el vértice no ha sido visitado la distancia 
+			hacia el punto vecino es menor que el radio	*/		
 
 				this.ejecutarDensidadAlacanzableRecurs(vertexAux, visitados); // se ejecuta el mismo procedimiento con el vértice próximo que le sigue
 			}

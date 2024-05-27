@@ -62,7 +62,7 @@ public class FramePrincipal extends JFrame {
 	private JMenuItem mntmNuevoGrafo;
 	private JMenuItem mntmCargarGrafo;
 	private JMenuItem mntmImportarImagen;
-	private Vertex vertexSeleccionado; // representa el vértice seleccionado
+	private Vertex vertexSeleccionado; // representa el vértice seleccionado (no mezcla logica con interfaz ******)
 	private JMenuItem mntmClasificadosCsv;
 	private JMenuItem mntmNewMenuItem_1;
 	private JMenuItem mntmCargarNoClasificados;

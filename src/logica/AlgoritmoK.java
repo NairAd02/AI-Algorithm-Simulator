@@ -166,6 +166,15 @@ public abstract class AlgoritmoK implements Serializable {
 		return (float)Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 	}
 
+	public void actualizarPoderacionTodasLasAristas () { // Optimizar
+		for (Vertex vertex : this.grafo.getVerticesList()) {
+
+			for (Edge edge : vertex.getEdgeList()) {
+				this.actualizarPonderacionArista((WeightedEdge) edge, vertex, edge.getVertex());
+			}
+		}
+	}
+
 	// Metodo para actualizar la operacion de una arista en tiempo de ejecucion
 	public void actualizarPonderacionArista(WeightedEdge arista, Vertex vertexInicial, Vertex vertexFinal) {
 		arista.setWeight(this.distanciaEuclidiana(((Elemento)vertexInicial.getInfo()).getX(), 
@@ -210,7 +219,10 @@ public abstract class AlgoritmoK implements Serializable {
 	public void actualizarPosicionesVertice (Vertex vertex, float posX, float posY) {
 		((Elemento) vertex.getInfo()).setX(posX);
 		((Elemento) vertex.getInfo()).setY(posY);
-		this.ejecutarAlgoritmo(); // se ejecuta el algoritmo KNN para actualizar las clases de acuerdo a la cercanias de los vecinos dado los nuevos valores de distancias
+		// Una vez actualizada las posiciones de los vértices se actualizan las ponderaciones de las aristas
+		this.actualizarPoderacionTodasLasAristas();
+		// Luego con los datos actualizados se ejecuta el algoritmo
+		this.ejecutarAlgoritmo();
 	}
 
 
