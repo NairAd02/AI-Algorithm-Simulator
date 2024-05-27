@@ -16,7 +16,7 @@ public class Clase implements Serializable {
 
 	public Clase (String nombre) {
 		this.nombre = nombre;
-		this.color = Colors.generarColorAleatorio(); // se genera un color aleatorio para la clase
+		this.color = Colors.getInstancie().generarColorAleatorio(); // se genera un color aleatorio para la clase
 	}
 
 	public String getNombre() {

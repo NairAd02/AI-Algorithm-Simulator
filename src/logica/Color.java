@@ -42,5 +42,9 @@ public class Color implements Serializable {
 	public void setBlue(float blue) {
 		this.blue = blue;
 	}
+	
+	public String toString () {
+		return this.red + " " + this.green + " " + this.blue;
+	}
 
 }

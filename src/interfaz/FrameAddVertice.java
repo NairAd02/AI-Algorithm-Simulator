@@ -16,6 +16,11 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+
+import logica.Controlador;
+import logica.Dbscan;
+import logica.Knn;
+
 import javax.swing.JCheckBox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -187,8 +192,20 @@ public class FrameAddVertice extends JFrame {
 		chckbxClasificado.setBounds(122, 155, 184, 23);
 		panel.add(chckbxClasificado);
 
-		this.actualizarEstadoSeccionClase(); // se actualiza el estado de los labels e inputs que formen parte de la seccion de seleccion de estado
+		this.actualizarOpciones();
 
+	}
+
+	private void actualizarOpciones () {
+		// si el algoritmo seleccionado fue Dbscan
+		if (Controlador.getInstancie().getAlgoritmoK() instanceof Dbscan) {
+			// No se mostrarán las opciones de clasificación al usuario
+			this.lblClase.setVisible(false);
+			this.textFieldClase.setVisible(false);
+			this.chckbxClasificado.setVisible(false);
+		}
+		else
+			this.actualizarEstadoSeccionClase(); // se actualiza el estado de los labels e inputs que formen parte de la seccion de seleccion de estado
 	}
 
 	private void actualizarEstadoSeccionClase () {

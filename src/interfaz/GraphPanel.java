@@ -1,5 +1,6 @@
 package interfaz;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 
 
@@ -19,6 +20,7 @@ import cu.edu.cujae.ceis.graph.vertex.Vertex;
 
 import logica.Controlador;
 import logica.Elemento;
+import logica.Knn;
 import utils.Par;
 import utils.ParVertex;
 
@@ -54,40 +56,46 @@ public class GraphPanel extends JPanel {
 			public void mousePressed(MouseEvent e) {
 				if (FramePrincipal.getInstancie().isInserctionVertex()) { // si está habilitada la insercción de vertice
 					// se inserta el elemento como vertice del grafo
+					/* **** Encapsular procedimiento en la clase controladora **** */
 					try {
-						if (FramePrincipal.getInstancie().getClase().equalsIgnoreCase("")) // si no fue seleccionado un nombre de clase
-							Controlador.getInstancie().getGrafo().addElemento(FramePrincipal.getInstancie().getNombreCiudad(), e.getX(), e.getY());
-						else
-							Controlador.getInstancie().getGrafo().addElemento(FramePrincipal.getInstancie().getNombreCiudad(), e.getX(), e.getY(), 
-									FramePrincipal.getInstancie().getClase());
+						if (Controlador.getInstancie().getAlgoritmoK() instanceof Knn) { // si el algoritmo seleccionado fue KNN
+							if (FramePrincipal.getInstancie().getClase().equalsIgnoreCase("")) // si no fue seleccionado un nombre de clase
+								Controlador.getInstancie().getAlgoritmoK().addElemento(FramePrincipal.getInstancie().getNombreCiudad(), e.getX(), e.getY());
+							else
+								((Knn)	Controlador.getInstancie().getAlgoritmoK()).addElemento(FramePrincipal.getInstancie().getNombreCiudad(), e.getX(), e.getY(), 
+										FramePrincipal.getInstancie().getClase());
+						}
+						else { // si el algoritmo seleccionado fue DevScan
+							Controlador.getInstancie().getAlgoritmoK().addElemento(FramePrincipal.getInstancie().getNombreCiudad(), e.getX(), e.getY());
+						}
 
 						FramePrincipal.getInstancie().setNombreCiudad(""); // se libera memoria
 						FramePrincipal.getInstancie().setClase(""); // se libera memoria
 						actualizarInfoLienzo();
 					} catch (Exception e1) {
-						   String message = e1.getMessage();
+						String message = e1.getMessage();
 
-						    if (message.equals("No se permiten vertices con elementos duplicados")) {
-						    	FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.getInstancie(), "No se permiten vertices con id duplicados");
-								frameAdvertencia.setVisible(true);
-								FramePrincipal.getInstancie().setEnabled(false); // se inhabilita el frame principal
-						    } else if (message.equals("No se permiten clases duplicadas")) {
-						    	FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.getInstancie(), "La clase del vértice clasificado pertenece a otro vértice clasificado");
-								frameAdvertencia.setVisible(true);
-								FramePrincipal.getInstancie().setEnabled(false); // se inhabilita el frame principal
-						    }
-						    
-						
+						if (message.equals("No se permiten vertices con elementos duplicados")) {
+							FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.getInstancie(), "No se permiten vertices con id duplicados");
+							frameAdvertencia.setVisible(true);
+							FramePrincipal.getInstancie().setEnabled(false); // se inhabilita el frame principal
+						} else if (message.equals("No se permiten clases duplicadas")) {
+							FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.getInstancie(), "La clase del vértice clasificado pertenece a otro vértice clasificado");
+							frameAdvertencia.setVisible(true);
+							FramePrincipal.getInstancie().setEnabled(false); // se inhabilita el frame principal
+						}
+
+
 					}
 					FramePrincipal.getInstancie().setInserctionVertex(false); // se inhabilita la inserccion de vertices
 					FramePrincipal.getInstancie().setNombreCiudad(""); // se pone nombre por defecto (se libera memoria)
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
 				else if (FramePrincipal.getInstancie().isDeleteArista()) { // Si está habilitada la insercción de aristas
-					ParVertex parVertex = Controlador.getInstancie().getGrafo().buscarAristaCercana(e.getX(), e.getY()); // se obtienen los pares de vertices de la arista mas cercana al punto
+					ParVertex parVertex = Controlador.getInstancie().getAlgoritmoK().buscarAristaCercana(e.getX(), e.getY()); // se obtienen los pares de vertices de la arista mas cercana al punto
 					if (parVertex != null) { // se se seleccionó una arista
 						FrameDecisor frameDecisor = new FrameDecisor(FramePrincipal.getInstancie(), "Seguro que desea eliminar la arista seleccionada?", () -> {
-							Controlador.getInstancie().getGrafo().eliminarArista(parVertex.getVertexInicial(), parVertex.getVertexFinal()); // se elimina la arista que tiene como inicio y fin a esos vertices
+							Controlador.getInstancie().getAlgoritmoK().eliminarArista(parVertex.getVertexInicial(), parVertex.getVertexFinal()); // se elimina la arista que tiene como inicio y fin a esos vertices
 							FramePrincipal.getInstancie().setDeleteArista(false); // se inhabilita la eliminación de arista
 						});
 						frameDecisor.setVisible(true);
@@ -114,7 +122,7 @@ public class GraphPanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		//actualizarVerticesLienzo();
-		if (Controlador.getInstancie().getGrafo() != null) { // si ya fue cargado un grafo
+		if (Controlador.getInstancie().getAlgoritmoK() != null) { // si ya fue cargado un grafo
 			actualizarAristasLienzo(g);
 			if (Par.vertexInicial != null) {
 				Graphics2D g2 = (Graphics2D) g;
@@ -135,7 +143,7 @@ public class GraphPanel extends JPanel {
 	}
 
 	private void actualizarVerticesLienzo() {
-		LinkedList<Vertex> verticesGrafo = Controlador.getInstancie().getGrafo().getGrafoKNN().getVerticesList(); // se obtiene la lista de vertices del grafo
+		LinkedList<Vertex> verticesGrafo = Controlador.getInstancie().getAlgoritmoK().getVerticesList(); // se obtiene la lista de vertices del grafo
 		removeAll(); // se remueven todos los componentes
 		// Se recorre la lista de vertices para pintar los vertices del grafo
 		for (Vertex vertex : verticesGrafo) {
@@ -147,7 +155,11 @@ public class GraphPanel extends JPanel {
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON); // Para suavizar los bordes
 
-		LinkedList<Vertex> verticesGrafo = Controlador.getInstancie().getGrafo().getGrafoKNN().getVerticesList(); // se obtiene la lista de vertices del grafo
+		// Define el grosor de la línea
+		float grosor = 3.0f; // Puedes cambiar este valor para ajustar el grosor
+		g2.setStroke(new BasicStroke(grosor));
+
+		LinkedList<Vertex> verticesGrafo = Controlador.getInstancie().getAlgoritmoK().getVerticesList(); // se obtiene la lista de vertices del grafo
 
 		for (Vertex vertex : verticesGrafo) {
 			Elemento elementoInicial = (Elemento) vertex.getInfo(); // se obtiene al elemento inicial
@@ -172,10 +184,10 @@ public class GraphPanel extends JPanel {
 				// Si ha sido seleccionado un vértice en la interfaz y ese vértice es al que se le van a pintar las aristas
 				if (FramePrincipal.getInstancie().getVertexSeleccionado() !=  null && 
 						vertex.equals(FramePrincipal.getInstancie().getVertexSeleccionado())) {
-					g2.setColor(Color.RED);							
+					g2.setColor(SystemColor.RED);							
 				}
 				else {
-					g2.setColor(Color.BLACK);
+					g2.setColor(SystemColor.inactiveCaptionBorder);
 				}
 
 				// Dibuja la línea
@@ -206,7 +218,7 @@ public class GraphPanel extends JPanel {
 				int xCenter = (x1 + x2) / 2;
 				int yCenter = (y1 + y2) / 2;
 				// se actualiza la ponderacion de la arista
-				Controlador.getInstancie().getGrafo().actualizarPonderacionArista((WeightedEdge) edge, vertex, edge.getVertex());
+				Controlador.getInstancie().getAlgoritmoK().actualizarPonderacionArista((WeightedEdge) edge, vertex, edge.getVertex());
 				String weight = String.format("%.2f", ((WeightedEdge)edge).getWeight());
 				g2.drawString(weight, xCenter, yCenter);
 			}
@@ -215,7 +227,7 @@ public class GraphPanel extends JPanel {
 
 
 	public void actualizarColoresPaneles () {
-	
+
 		for (int i = 0; i < getComponentCount(); i++) {
 			VertexPanel vertexPanel = (VertexPanel) getComponent(i);
 			vertexPanel.actualizarColorPanel();

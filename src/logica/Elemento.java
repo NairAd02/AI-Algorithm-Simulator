@@ -92,6 +92,10 @@ public class Elemento implements Serializable{
 	public boolean isClasificado() {
 		return isClasificado;
 	}
+	
+	public boolean haveClasificado () {
+		return this.clase != null; // retorna true si el elemento ya fue clasificado
+	}
 
 	public void setClasificado(boolean isClasificado) {
 		this.isClasificado = isClasificado;

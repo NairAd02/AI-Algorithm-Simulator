@@ -16,7 +16,8 @@ import logica.Elemento;
 
 public class Main {
 	public static void main(String[] args){
-		Controlador controlador = Controlador.getInstancie();
+		// Implementar Carga con ficheros CSSV reales
+		/*Controlador controlador = Controlador.getInstancie();
 		// Se crea el fichero csv de los vertices no clasificados
 		ArrayList<Elemento> elementosNoClasificados = new ArrayList<Elemento>();
 		elementosNoClasificados.add(new Elemento("Elemento de Prueba 1", 100, 100));
@@ -37,7 +38,7 @@ public class Main {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		// Habilitar lookAndFeel
 		JFrame.setDefaultLookAndFeelDecorated(true);
 

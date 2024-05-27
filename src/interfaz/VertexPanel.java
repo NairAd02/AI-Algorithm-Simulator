@@ -9,6 +9,7 @@ import javax.swing.JPanel;
 import cu.edu.cujae.ceis.graph.vertex.Vertex;
 import logica.Controlador;
 import logica.Elemento;
+import logica.Knn;
 import utils.Par;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -42,7 +43,7 @@ public class VertexPanel extends JPanel {
 			public void mouseDragged(MouseEvent e) {
 				int x = e.getXOnScreen()- FramePrincipal.getInstancie().getLienzo().getLocationOnScreen().x;
 				int y = e.getYOnScreen()- FramePrincipal.getInstancie().getLienzo().getLocationOnScreen().y;
-				Controlador.getInstancie().getGrafo().actualizarPosicionesVertice(vertex, x - mouseX, y - mouseY); // se actualizan las posiciones del vértice
+				Controlador.getInstancie().getAlgoritmoK().actualizarPosicionesVertice(vertex, x - mouseX, y - mouseY); // se actualizan las posiciones del vértice
 				if((x - mouseX)>-30&&(y-mouseY>-30)&&(x - mouseX)<2000-getWidth()&&
 						(y - mouseY)<2000-getHeight()) {
 					setLocation(x - mouseX, y-mouseY);
@@ -61,7 +62,7 @@ public class VertexPanel extends JPanel {
 					else {
 						Par.vertexFinal = vertex;
 						try {
-							Controlador.getInstancie().getGrafo().addArista(Par.vertexInicial, Par.vertexFinal);
+							Controlador.getInstancie().getAlgoritmoK().addArista(Par.vertexInicial, Par.vertexFinal);
 							FramePrincipal.getInstancie().setInserctionEdge(false);
 							setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 							FramePrincipal.getInstancie().actualizarAristasLienzo();
@@ -79,7 +80,7 @@ public class VertexPanel extends JPanel {
 				}
 				else if (FramePrincipal.getInstancie().isDeleteVertex()) { // se está habilitada la eliminación de un vértice
 					FrameDecisor frameDecisor = new FrameDecisor(FramePrincipal.getInstancie(), "Seguro que desea eliminar el vertice " + ((Elemento) vertex.getInfo()).getId(), () -> {
-						Controlador.getInstancie().getGrafo().eliminarVertice(vertex); // se elimina el vertice de la logica del negocio
+						Controlador.getInstancie().getAlgoritmoK().eliminarVertice(vertex); // se elimina el vertice de la logica del negocio
 						FramePrincipal.getInstancie().actualizarLienzo(); // se actualiza la información del lienzo
 						FramePrincipal.getInstancie().setDeleteVertex(false); // se inhabilita la eliminación de un vértice
 						FramePrincipal.lanzarNotificacion("El vertice " + vertex.getInfo() + " ha sido eliminado con exito"); // se notifica al usuario de la eliminación
@@ -126,12 +127,15 @@ public class VertexPanel extends JPanel {
 		// se actualizan las dimensiones del vertice
 		((Elemento) this.vertex.getInfo()).setAncho(getWidth());
 		((Elemento) this.vertex.getInfo()).setLargo(getHeight());
+		// solo se aplica el procedimiento si fue seleccionado el algoritmo KNN
+		if (Controlador.getInstancie().getAlgoritmoK() instanceof Knn) {
+			if (((Elemento) this.vertex.getInfo()).isClasificado()) { // si es un vértice clasificado
 
-		if (((Elemento) this.vertex.getInfo()).isClasificado()) { // si es un vértice clasificado
-			JLabel lblClasificado = new JLabel("Class"); // se marca como un clasificado
-			lblClasificado.setForeground(SystemColor.WHITE);
-			lblClasificado.setFont(new Font("Dialog", Font.BOLD, 11));
-			add(lblClasificado, BorderLayout.NORTH);
+				JLabel lblClasificado = new JLabel("Class"); // se marca como un clasificado
+				lblClasificado.setForeground(SystemColor.WHITE);
+				lblClasificado.setFont(new Font("Dialog", Font.BOLD, 11));
+				add(lblClasificado, BorderLayout.NORTH);
+			}
 		}
 
 	}

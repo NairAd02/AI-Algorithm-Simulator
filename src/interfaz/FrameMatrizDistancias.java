@@ -115,7 +115,7 @@ public class FrameMatrizDistancias extends JFrame {
 		panelMatrizDistancias.add(scrollPane, BorderLayout.CENTER);
 		
 		tableMatrizDistancias = new JTable();
-		tableMatrizDistancias.setModel(new ModelTablaMatrizDistancias(Controlador.getInstancie().getGrafo().getVerticesList())); // se le añade el modelo a la tabla
+		tableMatrizDistancias.setModel(new ModelTablaMatrizDistancias(Controlador.getInstancie().getAlgoritmoK().getVerticesList())); // se le añade el modelo a la tabla
 		tableMatrizDistancias.setRowHeight(30);
 		tableMatrizDistancias.setFont(new Font("Tahoma", Font.PLAIN, 18));
 		tableMatrizDistancias.getTableHeader().setFont(new Font("Arial", Font.BOLD, 18));
@@ -132,10 +132,10 @@ public class FrameMatrizDistancias extends JFrame {
 	}
 	
 	public void actualizarMatrizDistancias () {
-	     ArrayList<ArrayList<Double>> matrizDistancias = Controlador.getInstancie().getGrafo().obtenerMatrizDistancias(); // se obtiene la matriz de distancias del grafo
+	     ArrayList<ArrayList<Double>> matrizDistancias = Controlador.getInstancie().getAlgoritmoK().obtenerMatrizDistancias(); // se obtiene la matriz de distancias del grafo
 	     int count = 0;
 	     for (ArrayList<Double> fila : matrizDistancias) {
-	    	 Elemento elementoFila = (Elemento) Controlador.getInstancie().getGrafo().getVertexPos(count++).getInfo();
+	    	 Elemento elementoFila = (Elemento) Controlador.getInstancie().getAlgoritmoK().getVertexPos(count++).getInfo();
 			((ModelTablaMatrizDistancias)this.tableMatrizDistancias.getModel()).addElement(elementoFila, fila);
 		}
 	}

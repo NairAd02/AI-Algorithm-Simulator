@@ -1,0 +1,3 @@
+K:
+Epsilon: representa el radio máximo a buscar por cercanía (distancia máxima)
+Minimo numero de nodos: el minimo numero de elementos que pueden formar parte de un cluster (indica el momento en el que puede formarse un cluster)

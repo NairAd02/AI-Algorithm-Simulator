@@ -108,7 +108,7 @@ public class FrameLeyenda extends JFrame {
 	}
 	
 	public void actualizarLeyenda () {
-		Iterator<Clase> clases = Controlador.getInstancie().getGrafo().getClases().iterator(); // se obtiene el iterador de las clases
+		Iterator<Clase> clases = Controlador.getInstancie().getAlgoritmoK().getClases().iterator(); // se obtiene el iterador de las clases
 		
 		while(clases.hasNext()) {
 			this.panelParClase.add(new ParLeyenda(clases.next()));

@@ -1,24 +1,19 @@
 package interfaz;
 
 import javax.swing.JFrame;
-
-
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import javax.swing.JLabel;
 import java.awt.Font;
-
-
 import javax.swing.border.MatteBorder;
-
 import cu.edu.cujae.ceis.graph.interfaces.ILinkedWeightedEdgeDirectedGraph;
 import cu.edu.cujae.ceis.graph.vertex.Vertex;
+import logica.AlgoritmoK;
 import logica.Controlador;
-import logica.Grafo;
+import logica.Knn;
 import utils.ManejoDirectorios;
 import utils.ManejoImagen;
 import utils.Par;
-
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -70,6 +65,8 @@ public class FramePrincipal extends JFrame {
 	private Vertex vertexSeleccionado; // representa el vértice seleccionado
 	private JMenuItem mntmClasificadosCsv;
 	private JMenuItem mntmNewMenuItem_1;
+	private JMenuItem mntmCargarNoClasificados;
+	private JMenuItem mntmNewMenuItem;
 
 
 
@@ -182,7 +179,7 @@ public class FramePrincipal extends JFrame {
 		panelOpcionesLateral.setBackground(new Color(35, 47, 59));
 		panelLateral.add(panelOpcionesLateral, BorderLayout.CENTER);
 
-		lblAddVertex = new JLabel("Insertar Vertice");
+		lblAddVertex = new JLabel("Insertar Elemento");
 		lblAddVertex.setOpaque(true);
 		lblAddVertex.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		lblAddVertex.setForeground(SystemColor.textHighlightText);
@@ -222,7 +219,7 @@ public class FramePrincipal extends JFrame {
 		lblAddVertex.setFont(new Font("Dialog", Font.PLAIN, 21));
 		panelOpcionesLateral.add(lblAddVertex);
 
-		lblEliminarVertice = new JLabel("Eliminar Vertice");
+		lblEliminarVertice = new JLabel("Eliminar Elemento");
 		lblEliminarVertice.setOpaque(true);
 		lblEliminarVertice.setBackground(new Color(35, 47, 59));
 		lblEliminarVertice.addMouseListener(new MouseAdapter() {
@@ -239,7 +236,7 @@ public class FramePrincipal extends JFrame {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (lblEliminarVertice.isEnabled()) { // si el boton se encuentra habilitado
-					if (Controlador.getInstancie().getGrafo().cantVertices() != 0) { // se existe al menos un vertice
+					if (Controlador.getInstancie().getAlgoritmoK().cantVertices() != 0) { // se existe al menos un vertice
 						FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Seleccione el vertice que desea eliminar");
 						frameAdvertencia.setVisible(true);
 						setEnabled(false); // se inhabilita el frame principal
@@ -336,7 +333,7 @@ public class FramePrincipal extends JFrame {
 					File selectedFile = fileChooser.getSelectedFile(); // se obtiene el archivo selecionado
 					// se guarda el grafo en memoria externa
 					try {
-						ManejoDirectorios.guardarArchivo(Controlador.getInstancie().getGrafo(), selectedFile.getAbsolutePath());
+						ManejoDirectorios.guardarArchivo(Controlador.getInstancie().getAlgoritmoK(), selectedFile.getAbsolutePath());
 						FramePrincipal.lanzarNotificacion("Se ha guardado con exito el grafo");
 					} catch (FileNotFoundException e1) {
 						// TODO Auto-generated catch block
@@ -359,7 +356,7 @@ public class FramePrincipal extends JFrame {
 					File selectedFile = fileChooser.getSelectedFile(); // se obtiene el archivo selecionado
 					// Se carga el grafo de memoria externa
 					try {
-						Controlador.getInstancie().setGrafo((Grafo) ManejoDirectorios.recuperarArchivo(selectedFile.getAbsolutePath()));
+						Controlador.getInstancie().setAlgoritmoK((AlgoritmoK) ManejoDirectorios.recuperarArchivo(selectedFile.getAbsolutePath()));
 						actualizarEstadoBotones(); // se actualiza el estado de los botones
 						actualizarLienzo(); //se actualiza la información del lienzo para mostrar el diagrama cargado
 						FramePrincipal.lanzarNotificacion("Se ha cargado el grafo seleccionado correctamente");
@@ -445,16 +442,17 @@ public class FramePrincipal extends JFrame {
 		});
 		mnOpciones.add(mntmNewMenuItem_5);
 
+
 		mntmClasificadosCsv = new JMenuItem("Cargar Clasificados.csv");
 		mntmClasificadosCsv.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// se cargan y se añaden al grafo los datos clasificados
 				try {
-					Controlador.getInstancie().getGrafo().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos clasificados.csv"));
+					Controlador.getInstancie().getAlgoritmoK().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos clasificados.csv"));
 					actualizarLienzo(); // se actualiza la información del lienzo
 					FramePrincipal.lanzarNotificacion("Los datos clasificados del fichero han sido cargados con exito");
 				} catch (Exception e1) {
-					
+
 					FrameAdvertencia frameAdvertencia = new FrameAdvertencia(FramePrincipal.this, "Ya los datos de este fichero ya fueron cargados");
 					frameAdvertencia.setVisible(true);
 					setEnabled(false); // se inhabilita el frame actual
@@ -463,12 +461,14 @@ public class FramePrincipal extends JFrame {
 		});
 		mnOpciones.add(mntmClasificadosCsv);
 
-		JMenuItem mntmNewMenuItem = new JMenuItem("Cargar No Clasificados.csv");
-		mntmNewMenuItem.addActionListener(new ActionListener() {
+
+
+		mntmCargarNoClasificados = new JMenuItem("Cargar No Clasificados.csv");
+		mntmCargarNoClasificados.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				// se cargan y se añaden al grafo los datos no clasificados
 				try {
-					Controlador.getInstancie().getGrafo().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos no clasificados.csv"));
+					Controlador.getInstancie().getAlgoritmoK().addElementos(Controlador.getInstancie().cargarFicheroCsvElementos("datos no clasificados.csv"));
 					actualizarLienzo(); // se actualiza la información del lienzo
 					FramePrincipal.lanzarNotificacion("Los datos no clasificados del fichero han sido cargados con exito");
 				} catch (Exception e1) {
@@ -479,21 +479,31 @@ public class FramePrincipal extends JFrame {
 				}
 			}
 		});
-		mnOpciones.add(mntmNewMenuItem);
+		mnOpciones.add(mntmCargarNoClasificados);
+
 
 		mntmNewMenuItem_1 = new JMenuItem("Exportar Matriz de Distancia");
 		mntmNewMenuItem_1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Controlador.getInstancie().getGrafo().crearFicheroMatrizDistancias(); // se crea en memoria externa un fichero con la info de la matriz de distancias del grafo
+					Controlador.getInstancie().getAlgoritmoK().crearFicheroMatrizDistancias(); // se crea en memoria externa un fichero con la info de la matriz de distancias del grafo
 					FramePrincipal.lanzarNotificacion("La actual Matriz de Distancias del Grafo ha sido exportada correctamente");
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
 			}
 		});
 		mnOpciones.add(mntmNewMenuItem_1);
+
+		mntmNewMenuItem = new JMenuItem("Ver Información Proyecto");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				FrameInfoProyecto frameInfoProyecto = new FrameInfoProyecto();
+				frameInfoProyecto.setVisible(true);
+				setEnabled(false); // se inhabilita del frame principal
+			}
+		});
+		mnOpciones.add(mntmNewMenuItem);
 
 		lblSalir = new JLabel("X ");
 		lblSalir.setHorizontalAlignment(SwingConstants.CENTER);
@@ -528,8 +538,20 @@ public class FramePrincipal extends JFrame {
 
 	}
 
+	public void actualizarMenuOpciones () {
+		// si fue seleccionado KNN
+		if (Controlador.getInstancie().getAlgoritmoK() instanceof Knn) {
+			this.mntmClasificadosCsv.setVisible(true);
+			this.mntmCargarNoClasificados.setVisible(true);
+		}
+		else { // si fue seleccionado Dbscan
+			this.mntmClasificadosCsv.setVisible(false);
+			this.mntmCargarNoClasificados.setVisible(false);
+		}
+	}
+
 	public void actualizarEstadoBotones () {
-		if (Controlador.getInstancie().getGrafo() == null) { // si no ha sido cargado ningún grafo
+		if (Controlador.getInstancie().getAlgoritmoK() == null) { // si no ha sido cargado ningún grafo
 			this.lblAddVertex.setEnabled(false);
 			this.lblEliminarVertice.setEnabled(false);
 			this.mnOpciones.setEnabled(false);
